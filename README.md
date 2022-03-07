@@ -1,6 +1,6 @@
-* A star path finder
+# A star path finder
 
-** Example
+## Example
 
 ```go
 func AstarPath() {
