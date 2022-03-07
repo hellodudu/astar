@@ -14,6 +14,7 @@ func TestGenPath(t *testing.T) {
 	}
 
 	// add slow grids
+	m.AddSlow(0, 1)
 	m.AddSlow(1, 1)
 	m.AddSlow(2, 2)
 	m.AddSlow(2, 3)

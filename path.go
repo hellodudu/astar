@@ -79,5 +79,19 @@ func (p *Path) CheckPathNode(grid *Grid) *PathNode {
 func LengthValue(from, to *Grid) float64 {
 	x := from.X - to.X
 	y := from.Y - to.Y
-	return math.Sqrt(float64(x*x + y*y))
+
+	if x == 0 {
+		return math.Abs(float64(y))
+	}
+
+	if y == 0 {
+		return math.Abs(float64(x))
+	}
+
+	max := x
+	if y > x {
+		max = y
+	}
+	return math.Abs(float64(max)) * math.Sqrt2
+	// return math.Sqrt(float64(x*x + y*y))
 }
