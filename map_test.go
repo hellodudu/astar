@@ -1,6 +1,7 @@
 package astar
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -28,6 +29,11 @@ func TestGenPath(t *testing.T) {
 	}
 
 	m.PrintMapWithPath(pathNode)
+	sections := m.GetPathSections(pathNode)
+	fmt.Println("get path sections:")
+	for _, section := range sections {
+		fmt.Printf("%d, %d -> %d, %d\n", section.start.X, section.start.Y, section.end.X, section.end.Y)
+	}
 }
 
 func TestGenSimplePath(t *testing.T) {

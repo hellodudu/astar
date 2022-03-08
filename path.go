@@ -5,6 +5,11 @@ import (
 	"math"
 )
 
+type PathSection struct {
+	start *Grid
+	end   *Grid
+}
+
 type PathNode struct {
 	grid   *Grid
 	parent *PathNode
@@ -94,4 +99,12 @@ func LengthValue(from, to *Grid) float64 {
 	}
 	return math.Abs(float64(max)) * math.Sqrt2
 	// return math.Sqrt(float64(x*x + y*y))
+}
+
+func GetSlope(from, to *Grid) float64 {
+	if from.X == to.X {
+		return math.Inf(1)
+	}
+
+	return float64(to.Y-from.Y) / float64(to.X-from.X)
 }

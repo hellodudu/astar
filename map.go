@@ -22,9 +22,9 @@ func NewMap(width, height int) *Map {
 		m.grids[n] = make([]*Grid, height)
 	}
 
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
-			m.grids[x][y] = NewGrid(x, y)
+	for y := 0; y < width; y++ {
+		for x := 0; x < height; x++ {
+			m.grids[y][x] = NewGrid(x, y)
 		}
 	}
 
@@ -32,7 +32,7 @@ func NewMap(width, height int) *Map {
 }
 
 func (m *Map) GridValid(x, y int) bool {
-	return x >= 0 && x < len(m.grids) && y >= 0 && y < len(m.grids[x])
+	return y >= 0 && y < len(m.grids) && x >= 0 && x < len(m.grids[y])
 }
 
 func (m *Map) AddBlock(x, y int) {
@@ -40,7 +40,7 @@ func (m *Map) AddBlock(x, y int) {
 		return
 	}
 
-	m.grids[x][y].Block = true
+	m.grids[y][x].Block = true
 }
 
 func (m *Map) AddSlow(x, y int) {
@@ -48,7 +48,7 @@ func (m *Map) AddSlow(x, y int) {
 		return
 	}
 
-	m.grids[x][y].Slow = true
+	m.grids[y][x].Slow = true
 }
 
 func (m *Map) GetNeighbors(grid *Grid) []*Grid {
@@ -63,11 +63,11 @@ func (m *Map) GetNeighbors(grid *Grid) []*Grid {
 				continue
 			}
 
-			if m.grids[x][y].Block {
+			if m.grids[y][x].Block {
 				continue
 			}
 
-			neighbors = append(neighbors, m.grids[x][y])
+			neighbors = append(neighbors, m.grids[y][x])
 		}
 	}
 
@@ -145,21 +145,65 @@ func (m *Map) PrintMapWithPath(node *PathNode) {
 	}
 
 	for n := range m.grids {
-		fmt.Println()
 		for _, grid := range m.grids[n] {
 			if _, found := mapPathNodes[grid]; found {
-				fmt.Printf(" * ")
+				fmt.Printf(" *")
 				continue
 			}
 
 			if grid.Block {
-				fmt.Printf(" B ")
+				fmt.Printf(" B")
 			} else if grid.Slow {
-				fmt.Printf(" S ")
+				fmt.Printf(" S")
 			} else {
-				fmt.Printf(" O ")
+				fmt.Printf(" O")
 			}
 		}
 		fmt.Println()
 	}
+}
+
+func (m *Map) GetPathSections(node *PathNode) []*PathSection {
+	sections := make([]*PathSection, 0, 8)
+
+	// length == 0
+	if node == nil {
+		return sections
+	}
+
+	// length == 1
+	if node.parent == nil {
+		sections = append(sections, &PathSection{
+			start: node.grid,
+			end:   node.grid,
+		})
+		return sections
+	}
+
+	// length > 2
+	prev := node
+	curr := node.parent
+	prevSlope := GetSlope(prev.grid, curr.grid)
+	section := &PathSection{
+		start: prev.grid,
+	}
+
+	for ; curr != nil; curr = curr.parent {
+		slope := GetSlope(prev.grid, curr.grid)
+		if slope != prevSlope {
+			section.end = prev.grid
+			sections = append(sections, section)
+			section = &PathSection{
+				start: prev.grid,
+			}
+			prevSlope = slope
+		}
+
+		prev = curr
+	}
+
+	section.end = prev.grid
+	sections = append(sections, section)
+
+	return sections
 }
