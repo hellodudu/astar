@@ -4,7 +4,7 @@
 
 ```go
 func AstarPath() {
-	m := NewMap(30, 30)
+	m := NewQuadMap(30, 30)
 
 	// add block grids in middle
 	for n := 10; n < 20; n++ {

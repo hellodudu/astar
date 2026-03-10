@@ -7,24 +7,64 @@ import (
 
 type Map struct {
 	grids [][]*Grid
+	kind  GridKind
 }
 
-func NewMap(width, height int) *Map {
+func NewQuadMap(width, height int) *Map {
+	return newMap(width, height, GridKindQuad)
+}
+
+func NewHexMap(width, height int) *Map {
+	return newMap(width, height, GridKindHex)
+}
+
+func NewGridsMap(xs []int, ys []int, kind GridKind) *Map {
+	m := &Map{
+		grids: make([][]*Grid, 0),
+		kind:  kind,
+	}
+
+	newGridFn := NewQuadGrid
+	if kind == GridKindHex {
+		newGridFn = NewHexGrid
+	}
+
+	for idx := range xs {
+		x := xs[idx]
+		y := ys[idx]
+
+		if m.grids[y] == nil {
+			m.grids[y] = make([]*Grid, 0)
+		}
+
+		m.grids[y][x] = newGridFn(x, y)
+	}
+
+	return m
+}
+
+func newMap(width, height int, kind GridKind) *Map {
 	if width <= 0 || height <= 0 {
 		panic("invalid map width or height")
 	}
 
 	m := &Map{
 		grids: make([][]*Grid, width),
+		kind:  kind,
 	}
 
 	for n := 0; n < width; n++ {
 		m.grids[n] = make([]*Grid, height)
 	}
 
+	newGridFn := NewQuadGrid
+	if kind == GridKindHex {
+		newGridFn = NewHexGrid
+	}
+
 	for y := 0; y < width; y++ {
 		for x := 0; x < height; x++ {
-			m.grids[y][x] = NewGrid(x, y)
+			m.grids[y][x] = newGridFn(x, y)
 		}
 	}
 
@@ -32,7 +72,17 @@ func NewMap(width, height int) *Map {
 }
 
 func (m *Map) GridValid(x, y int) bool {
-	return y >= 0 && y < len(m.grids) && x >= 0 && x < len(m.grids[y])
+	if y < 0 || y >= len(m.grids) {
+		return false
+	}
+	if m.grids[y] == nil {
+		return false
+	}
+	if x < 0 || x >= len(m.grids[y]) {
+		return false
+	}
+
+	return m.grids[y][x] != nil
 }
 
 func (m *Map) AddBlock(x, y int) {
@@ -52,6 +102,13 @@ func (m *Map) AddSlow(x, y int) {
 }
 
 func (m *Map) GetNeighbors(grid *Grid) []*Grid {
+	if m.kind == GridKindHex {
+		return m.GetHexNeighbors(grid)
+	}
+	return m.GetQuadNeighbors(grid)
+}
+
+func (m *Map) GetQuadNeighbors(grid *Grid) []*Grid {
 	neighbors := make([]*Grid, 0, 8)
 	for x := grid.X - 1; x <= grid.X+1; x++ {
 		for y := grid.Y - 1; y <= grid.Y+1; y++ {
@@ -69,6 +126,35 @@ func (m *Map) GetNeighbors(grid *Grid) []*Grid {
 
 			neighbors = append(neighbors, m.grids[y][x])
 		}
+	}
+
+	return neighbors
+}
+
+func (m *Map) GetHexNeighbors(grid *Grid) []*Grid {
+	hexDirections := [][2]int{
+		{1, 0},  // right
+		{1, -1}, // top-right
+		{0, -1}, // top-left
+		{-1, 0}, // left
+		{-1, 1}, // bottom-left
+		{0, 1},  // bottom-right
+	}
+
+	neighbors := make([]*Grid, 0, 6)
+	for _, dir := range hexDirections {
+		x := grid.X + dir[0]
+		y := grid.Y + dir[1]
+
+		if !m.GridValid(x, y) {
+			continue
+		}
+
+		if m.grids[y][x].Block {
+			continue
+		}
+
+		neighbors = append(neighbors, m.grids[y][x])
 	}
 
 	return neighbors

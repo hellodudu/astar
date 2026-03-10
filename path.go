@@ -82,6 +82,13 @@ func (p *Path) CheckPathNode(grid *Grid) *PathNode {
 }
 
 func LengthValue(from, to *Grid) float64 {
+	if from.Kind == GridKindHex {
+		return HexLengthValue(from, to)
+	}
+	return quadLengthValue(from, to)
+}
+
+func quadLengthValue(from, to *Grid) float64 {
 	x := from.X - to.X
 	y := from.Y - to.Y
 
@@ -98,13 +105,39 @@ func LengthValue(from, to *Grid) float64 {
 		max = y
 	}
 	return math.Abs(float64(max)) * math.Sqrt2
-	// return math.Sqrt(float64(x*x + y*y))
+}
+
+func HexLengthValue(from, to *Grid) float64 {
+	q := from.X - to.X
+	r := from.Y - to.Y
+	s := -q - r
+	return float64((abs(q) + abs(r) + abs(s)) / 2)
+}
+
+func abs(n int) int {
+	if n < 0 {
+		return -n
+	}
+	return n
 }
 
 func GetSlope(from, to *Grid) float64 {
+	if from.Kind == GridKindHex {
+		return HexGetSlope(from, to)
+	}
+	return quadGetSlope(from, to)
+}
+
+func quadGetSlope(from, to *Grid) float64 {
 	if from.X == to.X {
 		return math.Inf(1)
 	}
 
 	return float64(to.Y-from.Y) / float64(to.X-from.X)
+}
+
+func HexGetSlope(from, to *Grid) float64 {
+	q := to.X - from.X
+	r := to.Y - from.Y
+	return math.Atan2(float64(r), float64(q))
 }

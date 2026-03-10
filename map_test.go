@@ -6,7 +6,7 @@ import (
 )
 
 func TestGenPath(t *testing.T) {
-	m := NewMap(30, 30)
+	m := NewQuadMap(30, 30)
 
 	// add block grids in middle
 	for n := 10; n < 20; n++ {
@@ -37,7 +37,7 @@ func TestGenPath(t *testing.T) {
 }
 
 func TestGenSimplePath(t *testing.T) {
-	m := NewMap(9, 9)
+	m := NewQuadMap(9, 9)
 
 	for n := 3; n < 6; n++ {
 		m.AddBlock(5, n)

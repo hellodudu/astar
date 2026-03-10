@@ -1,3 +1,3 @@
 module github.com/hellodudu/astar
 
-go 1.17
+go 1.22.3
