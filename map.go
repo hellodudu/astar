@@ -6,7 +6,7 @@ import (
 )
 
 type Map struct {
-	grids [][]*Grid
+	grids map[int]map[int]*Grid
 	kind  GridKind
 }
 
@@ -20,7 +20,7 @@ func NewHexMap(width, height int) *Map {
 
 func NewGridsMap(xs []int, ys []int, kind GridKind) *Map {
 	m := &Map{
-		grids: make([][]*Grid, 0),
+		grids: make(map[int]map[int]*Grid),
 		kind:  kind,
 	}
 
@@ -34,7 +34,7 @@ func NewGridsMap(xs []int, ys []int, kind GridKind) *Map {
 		y := ys[idx]
 
 		if m.grids[y] == nil {
-			m.grids[y] = make([]*Grid, 0)
+			m.grids[y] = make(map[int]*Grid)
 		}
 
 		m.grids[y][x] = newGridFn(x, y)
@@ -49,12 +49,8 @@ func newMap(width, height int, kind GridKind) *Map {
 	}
 
 	m := &Map{
-		grids: make([][]*Grid, width),
+		grids: make(map[int]map[int]*Grid, width),
 		kind:  kind,
-	}
-
-	for n := 0; n < width; n++ {
-		m.grids[n] = make([]*Grid, height)
 	}
 
 	newGridFn := NewQuadGrid
@@ -62,8 +58,9 @@ func newMap(width, height int, kind GridKind) *Map {
 		newGridFn = NewHexGrid
 	}
 
-	for y := 0; y < width; y++ {
-		for x := 0; x < height; x++ {
+	for y := 0; y < height; y++ {
+		m.grids[y] = make(map[int]*Grid, width)
+		for x := 0; x < width; x++ {
 			m.grids[y][x] = newGridFn(x, y)
 		}
 	}
@@ -72,17 +69,11 @@ func newMap(width, height int, kind GridKind) *Map {
 }
 
 func (m *Map) GridValid(x, y int) bool {
-	if y < 0 || y >= len(m.grids) {
-		return false
-	}
 	if m.grids[y] == nil {
 		return false
 	}
-	if x < 0 || x >= len(m.grids[y]) {
-		return false
-	}
-
-	return m.grids[y][x] != nil
+	_, ok := m.grids[y][x]
+	return ok
 }
 
 func (m *Map) AddBlock(x, y int) {
@@ -99,6 +90,43 @@ func (m *Map) AddSlow(x, y int) {
 	}
 
 	m.grids[y][x].Slow = true
+}
+
+func (m *Map) GetGrid(x, y int) *Grid {
+	if m.grids[y] == nil {
+		return nil
+	}
+	return m.grids[y][x]
+}
+
+func (m *Map) getYRange() (minY, maxY int) {
+	first := true
+	for y := range m.grids {
+		if first || y < minY {
+			minY = y
+		}
+		if first || y > maxY {
+			maxY = y
+		}
+		first = false
+	}
+	return
+}
+
+func (m *Map) getXRange() (minX, maxX int) {
+	first := true
+	for y := range m.grids {
+		for x := range m.grids[y] {
+			if first || x < minX {
+				minX = x
+			}
+			if first || x > maxX {
+				maxX = x
+			}
+			first = false
+		}
+	}
+	return
 }
 
 func (m *Map) GetNeighbors(grid *Grid) []*Grid {
@@ -209,9 +237,21 @@ func (m *Map) GenPath(src, target *Grid) *PathNode {
 }
 
 func (m *Map) PrintMap() {
-	for n := range m.grids {
+	if len(m.grids) == 0 {
+		return
+	}
+
+	minY, maxY := m.getYRange()
+	minX, maxX := m.getXRange()
+
+	for y := minY; y <= maxY; y++ {
 		fmt.Println()
-		for _, grid := range m.grids[n] {
+		for x := minX; x <= maxX; x++ {
+			grid := m.GetGrid(x, y)
+			if grid == nil {
+				fmt.Printf("   ")
+				continue
+			}
 			if grid.Block {
 				fmt.Printf(" B ")
 			} else if grid.Slow {
@@ -220,8 +260,8 @@ func (m *Map) PrintMap() {
 				fmt.Printf(" O ")
 			}
 		}
-		fmt.Println()
 	}
+	fmt.Println()
 }
 
 func (m *Map) PrintMapWithPath(node *PathNode) {
@@ -230,8 +270,20 @@ func (m *Map) PrintMapWithPath(node *PathNode) {
 		mapPathNodes[e.grid] = e
 	}
 
-	for n := range m.grids {
-		for _, grid := range m.grids[n] {
+	if len(m.grids) == 0 {
+		return
+	}
+
+	minY, maxY := m.getYRange()
+	minX, maxX := m.getXRange()
+
+	for y := minY; y <= maxY; y++ {
+		for x := minX; x <= maxX; x++ {
+			grid := m.GetGrid(x, y)
+			if grid == nil {
+				fmt.Printf("  ")
+				continue
+			}
 			if _, found := mapPathNodes[grid]; found {
 				fmt.Printf(" *")
 				continue

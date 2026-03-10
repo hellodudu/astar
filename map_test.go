@@ -21,8 +21,8 @@ func TestGenPath(t *testing.T) {
 	m.AddSlow(2, 3)
 	m.AddSlow(3, 3)
 
-	src := m.grids[0][0]
-	target := m.grids[29][29]
+	src := m.GetGrid(0, 0)
+	target := m.GetGrid(29, 29)
 	pathNode := m.GenPath(src, target)
 	if pathNode == nil {
 		t.Fatalf("cannot find a path from %v to %v \n", src, target)
@@ -44,8 +44,8 @@ func TestGenSimplePath(t *testing.T) {
 		m.AddBlock(n, 5)
 	}
 
-	src := m.grids[0][0]
-	target := m.grids[8][8]
+	src := m.GetGrid(0, 0)
+	target := m.GetGrid(8, 8)
 	pathNode := m.GenPath(target, src)
 	if pathNode == nil {
 		t.Fatalf("cannot find a path from %v to %v \n", src, target)
