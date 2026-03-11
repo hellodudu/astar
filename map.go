@@ -84,12 +84,28 @@ func (m *Map) AddBlock(x, y int) {
 	m.grids[y][x].Block = true
 }
 
+func (m *Map) RemoveBlock(x, y int) {
+	if !m.GridValid(x, y) {
+		return
+	}
+
+	m.grids[y][x].Block = false
+}
+
 func (m *Map) AddSlow(x, y int) {
 	if !m.GridValid(x, y) {
 		return
 	}
 
 	m.grids[y][x].Slow = true
+}
+
+func (m *Map) RemoveSlow(x, y int) {
+	if !m.GridValid(x, y) {
+		return
+	}
+
+	m.grids[y][x].Slow = false
 }
 
 func (m *Map) GetGrid(x, y int) *Grid {
