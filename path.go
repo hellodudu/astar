@@ -6,8 +6,8 @@ import (
 )
 
 type PathSection struct {
-	start *Grid
-	end   *Grid
+	Start *Grid
+	End   *Grid
 }
 
 type PathNode struct {

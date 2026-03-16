@@ -328,8 +328,8 @@ func (m *Map) GetPathSections(node *PathNode) []*PathSection {
 	// length == 1
 	if node.parent == nil {
 		sections = append(sections, &PathSection{
-			start: node.grid,
-			end:   node.grid,
+			Start: node.grid,
+			End:   node.grid,
 		})
 		return sections
 	}
@@ -339,16 +339,16 @@ func (m *Map) GetPathSections(node *PathNode) []*PathSection {
 	curr := node.parent
 	prevSlope := GetSlope(prev.grid, curr.grid)
 	section := &PathSection{
-		start: prev.grid,
+		Start: prev.grid,
 	}
 
 	for ; curr != nil; curr = curr.parent {
 		slope := GetSlope(prev.grid, curr.grid)
 		if slope != prevSlope {
-			section.end = prev.grid
+			section.End = prev.grid
 			sections = append(sections, section)
 			section = &PathSection{
-				start: prev.grid,
+				Start: prev.grid,
 			}
 			prevSlope = slope
 		}
@@ -356,7 +356,7 @@ func (m *Map) GetPathSections(node *PathNode) []*PathSection {
 		prev = curr
 	}
 
-	section.end = prev.grid
+	section.End = prev.grid
 	sections = append(sections, section)
 
 	return sections
