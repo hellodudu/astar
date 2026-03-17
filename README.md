@@ -29,7 +29,7 @@ func AstarPath() {
 
 	// print map and path
 	m.PrintMapWithPath(pathNode)
-	sections := m.GetPathSections(pathNode)
+	sections, _ := m.GetPathSections(pathNode)
 	fmt.Println("get path sections:")
 	for _, section := range sections {
 		fmt.Printf("%d, %d -> %d, %d\n", section.Start.X, section.Start.Y, section.End.X, section.End.Y)

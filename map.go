@@ -317,12 +317,12 @@ func (m *Map) PrintMapWithPath(node *PathNode) {
 	}
 }
 
-func (m *Map) GetPathSections(node *PathNode) []*PathSection {
+func (m *Map) GetPathSections(node *PathNode) ([]*PathSection, int) {
 	sections := make([]*PathSection, 0, 8)
 
 	// length == 0
 	if node == nil {
-		return sections
+		return sections, 0
 	}
 
 	// length == 1
@@ -331,7 +331,7 @@ func (m *Map) GetPathSections(node *PathNode) []*PathSection {
 			Start: node.grid,
 			End:   node.grid,
 		})
-		return sections
+		return sections, 1
 	}
 
 	// length > 2
@@ -342,6 +342,7 @@ func (m *Map) GetPathSections(node *PathNode) []*PathSection {
 		Start: prev.grid,
 	}
 
+	length := 0
 	for ; curr != nil; curr = curr.parent {
 		slope := GetSlope(prev.grid, curr.grid)
 		if slope != prevSlope {
@@ -354,10 +355,11 @@ func (m *Map) GetPathSections(node *PathNode) []*PathSection {
 		}
 
 		prev = curr
+		length++
 	}
 
 	section.End = prev.grid
 	sections = append(sections, section)
 
-	return sections
+	return sections, length
 }
